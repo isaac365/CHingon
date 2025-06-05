@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sistema de Gestión de Citas Psicológicas - UPIICSA</title>
+
+  <!-- CSS Dependencies -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid/main.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid/main.min.css" rel="stylesheet" />
+</head>
+<body>
+<div class="app-container">
+  <!-- Pantalla de Autenticación -->
+  <div id="auth-screen" class="auth-container">
+    <div class="auth-card">
+      <div class="text-center mb-4">
+        <img src="https://cdn.pixabay.com/photo/2018/05/08/21/28/logo-3384853_960_720.png" alt="UPIICSA Logo" class="auth-logo">
+        <h2 class="fw-bold text-dark">Sistema de Citas Psicológicas</h2>
+        <p class="text-muted">Departamento de Orientación Juvenil</p>
+      </div>
+
+      <div class="role-selector">
+        <button class="role-btn active" data-role="estudiante">Estudiante</button>
+        <button class="role-btn" data-role="psicologo">Psicólogo</button>
+        <button class="role-btn" data-role="administrador">Administrador</button>
+      </div>
+
+      <form class="auth-form" id="login-form">
+        <div class="mb-3">
+          <label for="email" class="form-label">Correo Electrónico</label>
+          <input type="email" class="form-control" id="email" placeholder="tu.correo@alumno.ipn.mx" required>
+          <div class="invalid-feedback">Por favor ingresa un correo válido.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Contraseña</label>
+          <input type="password" class="form-control" id="password" placeholder="••••••••" required>
+          <div class="invalid-feedback">La contraseña es requerida.</div>
+        </div>
+
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" id="remember">
+          <label class="form-check-label" for="remember">Recordarme</label>
+        </div>
+
+        <button type="submit" class="auth-submit">Iniciar Sesión</button>
+
+        <div class="text-center mt-3">
+          <a href="javascript:void(0)" class="text-decoration-none">¿Olvidaste tu contraseña?</a>
+        </div>
+      </form>
+
+      <button id="show-register" class="auth-submit mt-2" style="display: none;">Registrarse</button>
+
+      <form class="auth-form" id="register-form" style="display: none;">
+        <div class="mb-3">
+          <label for="reg-carrera" class="form-label">Carrera</label>
+          <select class="form-select" id="reg-carrera" required>
+            <option value="">Seleccionar...</option>
+            <option>Ing. Informática</option>
+            <option>Ing. Industrial</option>
+            <option>Ciencias en Informática</option>
+            <option>Administración</option>
+            <option>Transporte</option>
+          </select>
+          <div class="invalid-feedback">Selecciona tu carrera.</div>
+        </div>
+        <div class="mb-3">
+          <label for="reg-semestre" class="form-label">Semestre</label>
+          <input type="number" class="form-control" id="reg-semestre" min="1" required>
+          <div class="invalid-feedback">Ingresa tu semestre.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Caso</label>
+          <select class="form-select" id="reg-caso" required>
+            <option value="">Seleccionar...</option>
+            <option value="first">Primera vez</option>
+            <option value="recurrence">Recurrente</option>
+          </select>
+          <div class="invalid-feedback">Selecciona el tipo de caso.</div>
+        </div>
+        <div class="mb-3">
+          <label for="reg-boleta" class="form-label">Boleta</label>
+          <input type="text" class="form-control" id="reg-boleta" required>
+          <div class="invalid-feedback">Ingresa tu boleta.</div>
+        </div>
+        <div class="mb-3">
+          <label for="reg-password" class="form-label">Generar Contraseña</label>
+          <input type="password" class="form-control" id="reg-password" required>
+          <div class="invalid-feedback">La contraseña es requerida.</div>
+        </div>
+        <button type="submit" class="auth-submit">Registrarse</button>
+        <div class="text-center mt-3">
+          <a href="javascript:void(0)" id="back-to-login">Volver al inicio de sesión</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Aplicación Principal -->
+  <div id="app-main" style="display: none;">
+    <!-- Navbar -->
+    <nav class="navbar app-navbar navbar-expand-lg navbar-dark">
+      <div class="container-fluid">
+        <button id="sidebar-toggle" class="navbar-toggler me-2" type="button">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="javascript:void(0)">
+          <img src="https://cdn.pixabay.com/photo/2018/05/08/21/28/logo-3384853_960_720.png" alt="UPIICSA Logo" class="nav-logo">
+          <span class="ms-2 d-none d-sm-inline-block">Sistema DOJ</span>
+        </a>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle d-flex align-items-center" href="javascript:void(0)" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="User Avatar" class="user-avatar me-2">
+                <span id="user-name">Usuario</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="javascript:void(0)"><i class='bx bx-user me-2'></i>Mi Perfil</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0)"><i class='bx bx-cog me-2'></i>Configuración</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" id="logout-btn"><i class='bx bx-log-out me-2'></i>Cerrar Sesión</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <!-- Estudiante Sidebar -->
+      <div class="estudiante-sidebar">
+        <a href="javascript:void(0)" class="sidebar-link active" data-view="dashboard">
+          <i class='bx bx-home'></i> Inicio
+        </a>
+        <a href="javascript:void(0)" class="sidebar-link" data-view="appointment">
+          <i class='bx bx-calendar-plus'></i> Agendar Cita
+        </a>
+        <a href="javascript:void(0)" class="sidebar-link" data-view="history">
+          <i class='bx bx-history'></i> Historial de Citas
+        </a>
+        <a href="javascript:void(0)" class="sidebar-link" data-view="resources">
+          <i class='bx bx-book-reader'></i> Recursos
+        </a>
+      </div>
+
+      <!-- Psicólogo Sidebar -->
+      <div class="psicologo-sidebar" style="display: none;">
+        <a href="javascript:void(0)" class="sidebar-link active" data-view="dashboard">
+          <i class='bx bx-home'></i> Inicio
+        </a>
+        <a href="javascript:void(0)" class="sidebar-link" data-view="calendar">
+          <i class='bx bx-calendar'></i> Calendario
+        </a>
+        <a href="javascript:void(0)" class="sidebar-link" data-view="patients">
+          <i class='bx bx-user'></i> Pacientes
+        </a>
+        <a href="javascript:void(0)" class="sidebar-link" data-view="records">
+          <i class='bx bx-folder'></i> Expedientes
+        </a>
+      </div>
+
+      <!-- Admin Sidebar -->
+      <div class="admin-sidebar" style="display: none;">
+        <a href="javascript:void(0)" class="sidebar-link active" data-view="dashboard">
+          <i class='bx bx-home'></i> Inicio
+        </a>
+        <a href="javascript:void(0)" class="sidebar-link" data-view="users">
+          <i class='bx bx-user-circle'></i> Usuarios
+        </a>
+        <a href="javascript:void(0)" class="sidebar-link" data-view="stats">
+          <i class='bx bx-stats'></i> Estadísticas
+        </a>
+        <a href="javascript:void(0)" class="sidebar-link" data-view="reports">
+          <i class='bx bx-file'></i> Reportes
+        </a>
+        <a href="javascript:void(0)" class="sidebar-link" data-view="settings">
+          <i class='bx bx-cog'></i> Configuración
+        </a>
+      </div>
+    </div>
+
+    <!-- Área de Contenido -->
+    <div class="content-wrapper" id="content-area">
+      <!-- Vista Estudiante -->
+      <div class="estudiante-view">
+        <h2 class="mb-4">Bienvenido al Sistema de Citas Psicológicas</h2>
+
+        <!-- Tres tarjetas: Próxima Cita, Disponibilidad Actual, Recursos -->
+        <div class="row mb-4">
+          <div class="col-md-4 mb-4">
+            <div class="dashboard-card">
+              <div class="card-icon primary">
+                <i class='bx bx-calendar-check'></i>
+              </div>
+              <h3>Próxima Cita</h3>
+              <p id="next-appointment-info">No tienes citas programadas.</p>
+              <a href="javascript:void(0)" class="btn btn-sm btn-primary-custom">Solicitar Cita</a>
+            </div>
+          </div>
+
+          <div class="col-md-4 mb-4">
+            <div class="dashboard-card">
+              <div class="card-icon secondary">
+                <i class='bx bx-time'></i>
+              </div>
+              <h3>Disponibilidad Actual</h3>
+              <p>Revisa los horarios disponibles para agendar una nueva cita.</p>
+              <a href="javascript:void(0)" class="btn btn-sm btn-primary-custom">Ver Disponibilidad</a>
+            </div>
+          </div>
+
+          <div class="col-md-4 mb-4">
+            <div class="dashboard-card">
+              <div class="card-icon success">
+                <i class='bx bx-book-heart'></i>
+              </div>
+              <h3>Recursos</h3>
+              <p>Accede a nuestra biblioteca de recursos para el bienestar emocional.</p>
+              <a href="javascript:void(0)" class="btn btn-sm btn-primary-custom">Recursos</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendario + Historial de Citas -->
+        <div class="row">
+          <div class="col-md-8 mb-4">
+            <div class="dashboard-card">
+              <h3 class="mb-3">Calendario de Disponibilidad</h3>
+              <div id="estudiante-calendar"></div>
+            </div>
+          </div>
+
+          <div class="col-md-4 mb-4">
+            <div class="dashboard-card">
+              <h3 class="mb-3">Historial de Citas</h3>
+              <ul class="appointment-list" id="appointment-history">
+                <!-- Aquí se cargará dinámicamente el historial -->
+              </ul>
+              <div class="text-center mt-3">
+                <a href="javascript:void(0)" class="btn btn-sm btn-primary-custom">Ver Todo</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista Psicólogo -->
+      <div class="psicologo-view" style="display: none;">
+        <h2 class="mb-4">Panel del Psicólogo</h2>
+
+        <div class="row mb-4">
+          <div class="col-md-4 mb-4">
+            <div class="stat-card">
+              <h3>Citas Hoy</h3>
+              <div class="d-flex align-items-center">
+                <span class="number">5</span>
+                <div class="ms-3">
+                  <p class="mb-0">3 completadas</p>
+                  <p class="mb-0">2 pendientes</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4 mb-4">
+            <div class="stat-card">
+              <h3>Citas Semana</h3>
+              <div class="d-flex align-items-center">
+                <span class="number">18</span>
+                <div class="ms-3">
+                  <p class="mb-0">12 completadas</p>
+                  <p class="mb-0">6 pendientes</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4 mb-4">
+            <div class="stat-card">
+              <h3>Expedientes</h3>
+              <div class="d-flex align-items-center">
+                <span class="number">42</span>
+                <div class="ms-3">
+                  <p class="mb-0">12 activos</p>
+                  <p class="mb-0">30 cerrados</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-8 mb-4">
+            <div class="dashboard-card">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="mb-0">Agenda del Día</h3>
+                <div>
+                  <button class="btn btn-sm btn-primary-custom"><i class='bx bx-calendar-plus me-1'></i> Nueva Cita</button>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div class="input-group">
+                  <input type="date" class="form-control" id="agenda-date" value="2023-06-15">
+                  <button class="btn btn-primary-custom" type="button"><i class='bx bx-filter-alt'></i></button>
+                </div>
+              </div>
+
+              <div id="daily-agenda">
+                <div class="appointment-item">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-1">Juan Carlos Pérez</h5>
+                    <span class="badge bg-warning text-dark">En 30 min</span>
+                  </div>
+                  <p class="mb-1"><i class='bx bx-time me-2'></i>10:00 - 11:00</p>
+                  <p class="mb-1"><i class='bx bx-category me-2'></i>Primera vez | Ansiedad</p>
+                  <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-success me-1"><i class='bx bx-check'></i> Confirmar</button>
+                    <button class="btn btn-sm btn-outline-primary me-1"><i class='bx bx-edit'></i></button>
+                    <button class="btn btn-sm btn-outline-danger"><i class='bx bx-trash'></i></button>
+                  </div>
+                </div>
+
+                <div class="appointment-item">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-1">Ana María López</h5>
+                    <span class="badge bg-success">Confirmada</span>
+                  </div>
+                  <p class="mb-1"><i class='bx bx-time me-2'></i>12:00 - 13:00</p>
+                  <p class="mb-1"><i class='bx bx-category me-2'></i>Seguimiento | Depresión</p>
+                  <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-success me-1"><i class='bx bx-check'></i> Completar</button>
+                    <button class="btn btn-sm btn-outline-primary me-1"><i class='bx bx-edit'></i></button>
+                    <button class="btn btn-sm btn-outline-danger"><i class='bx bx-trash'></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4 mb-4">
+            <div class="dashboard-card">
+              <h3 class="mb-3">Calendario</h3>
+              <div id="psicologo-calendar"></div>
+              <div class="mt-3">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="badge bg-success me-2">&nbsp;</span>
+                  <small>Disponible</small>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                  <span class="badge bg-warning me-2">&nbsp;</span>
+                  <small>Parcialmente Reservado</small>
+                </div>
+                <div class="d-flex align-items-center">
+                  <span class="badge bg-danger me-2">&nbsp;</span>
+                  <small>Completamente Reservado</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12 mb-4">
+            <div class="clinical-record">
+              <div class="clinical-record-header d-flex justify-content-between align-items-center" id="record-toggle">
+                <h4 class="mb-0">Expediente Clínico</h4>
+                <i class='bx bx-chevron-down'></i>
+              </div>
+              <div class="clinical-record-body" id="record-body">
+                <div class="alert alert-info mb-3">
+                  <i class='bx bx-info-circle me-2'></i>
+                  Seleccione un paciente para ver o editar su expediente clínico.
+                </div>
+
+                <div id="patient-record" style="display: none;">
+                  <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <h4>Datos del Paciente</h4>
+                      <button class="btn btn-sm btn-outline-primary"><i class='bx bx-edit'></i> Editar</button>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <strong>Nombre:</strong> <span id="patient-name">Ana María López</span>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <strong>Boleta:</strong> <span id="patient-id">2019123456</span>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <strong>Carrera:</strong> <span id="patient-major">Ingeniería en Informática</span>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <strong>Semestre:</strong> <span id="patient-semester">6</span>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <strong>Edad:</strong> <span id="patient-age">21</span>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <strong>Sexo:</strong> <span id="patient-gender">Femenino</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-4">
+                    <h4 class="mb-3">Notas de Sesión</h4>
+
+                    <div class="mb-3">
+                      <form id="session-note-form">
+                        <div class="mb-3">
+                          <label for="session-date" class="form-label">Fecha de Sesión</label>
+                          <input type="date" class="form-control" id="session-date">
+                        </div>
+                        <div class="mb-3">
+                          <label for="session-type" class="form-label">Tipo de Sesión</label>
+                          <select class="form-select" id="session-type">
+                            <option value="first">Primera vez</option>
+                            <option value="followup">Seguimiento</option>
+                            <option value="crisis">Intervención en crisis</option>
+                          </select>
+                        </div>
+                        <div class="mb-3">
+                          <label for="session-notes" class="form-label">Notas</label>
+                          <textarea class="form-control" id="session-notes" rows="4"></textarea>
+                        </div>
+                        <div class="mb-3">
+                          <label for="session-plan" class="form-label">Plan Terapéutico</label>
+                          <textarea class="form-control" id="session-plan" rows="2"></textarea>
+                        </div>
+                        <div class="text-end">
+                          <button type="submit" class="btn btn-primary-custom">Guardar Nota</button>
+                        </div>
+                      </form>
+                    </div>
+
+                    <div class="mt-4">
+                      <h5 class="mb-3">Historial de Notas</h5>
+                      <div class="card mb-3">
+                        <div class="card-header bg-light">
+                          <div class="d-flex justify-content-between">
+                            <span><strong>Fecha:</strong> 01/06/2023</span>
+                            <span><strong>Tipo:</strong> Primera vez</span>
+                          </div>
+                        </div>
+                        <div class="card-body">
+                          <p class="card-text">La paciente reporta dificultades para concentrarse y mantener el sueño. Menciona preocupación por su rendimiento académico y sensación de tristeza persistente.</p>
+                          <p class="card-text"><strong>Plan:</strong> Iniciar técnicas de respiración y programar seguimiento en dos semanas.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista Administrador -->
+      <div class="admin-view" style="display: none;">
+        <h2 class="mb-4">Panel de Administración</h2>
+
+        <div class="row mb-4">
+          <div class="col-md-3 mb-4">
+            <div class="stat-card">
+              <h3>Total Usuarios</h3>
+              <div class="number">856</div>
+              <p>Estudiantes: 820 | Psicólogos: 15 | Admin: 21</p>
+            </div>
+          </div>
+
+          <div class="col-md-3 mb-4">
+            <div class="stat-card">
+              <h3>Citas Mensuales</h3>
+              <div class="number">124</div>
+              <p>↑ 12% respecto al mes anterior</p>
+            </div>
+          </div>
+
+          <div class="col-md-3 mb-4">
+            <div class="stat-card">
+              <h3>Carga de Trabajo</h3>
+              <div class="number">87%</div>
+              <p>Media de ocupación psicólogos</p>
+            </div>
+          </div>
+
+          <div class="col-md-3 mb-4">
+            <div class="stat-card">
+              <h3>Tiempo Promedio</h3>
+              <div class="number">25s</div>
+              <p>Para registro de cita</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-4">
+            <div class="chart-container">
+              <h3 class="mb-3">Citas por Periodo</h3>
+              <canvas id="appointments-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-4">
+            <div class="chart-container">
+              <h3 class="mb-3">Distribución por Carrera</h3>
+              <canvas id="majors-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12 mb-4">
+            <div class="dashboard-card">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="mb-0">Gestión de Usuarios</h3>
+                <button class="btn btn-primary-custom"><i class='bx bx-plus me-1'></i> Nuevo Usuario</button>
+              </div>
+
+              <div class="table-responsive admin-table">
+                <table class="table table-hover">
+                  <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Último Acceso</th>
+                    <th>Acciones</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td>María González</td>
+                    <td>maria.gonzalez@ipn.mx</td>
+                    <td><span class="badge bg-info">Psicólogo</span></td>
+                    <td><span class="badge bg-success">Activo</span></td>
+                    <td>2023-06-14 13:45</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary me-1"><i class='bx bx-edit'></i></button>
+                      <button class="btn btn-sm btn-outline-danger"><i class='bx bx-trash'></i></button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td>Juan Pérez</td>
+                    <td>juan.perez@alumno.ipn.mx</td>
+                    <td><span class="badge bg-secondary">Estudiante</span></td>
+                    <td><span class="badge bg-success">Activo</span></td>
+                    <td>2023-06-12 10:15</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary me-1"><i class='bx bx-edit'></i></button>
+                      <button class="btn btn-sm btn-outline-danger"><i class='bx bx-trash'></i></button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td>Roberto Sánchez</td>
+                    <td>roberto.sanchez@ipn.mx</td>
+                    <td><span class="badge bg-danger">Administrador</span></td>
+                    <td><span class="badge bg-success">Activo</span></td>
+                    <td>2023-06-15 09:30</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary me-1"><i class='bx bx-edit'></i></button>
+                      <button class="btn btn-sm btn-outline-danger"><i class='bx bx-trash'></i></button>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <div>Mostrando 1-3 de 45 registros</div>
+                <nav>
+                  <ul class="pagination pagination-sm">
+                    <li class="page-item disabled"><a class="page-link" href="javascript:void(0)">Anterior</a></li>
+                    <li class="page-item active"><a class="page-link" href="javascript:void(0)">1</a></li>
+                    <li class="page-item"><a class="page-link" href="javascript:void(0)">2</a></li>
+                    <li class="page-item"><a class="page-link" href="javascript:void(0)">3</a></li>
+                    <li class="page-item"><a class="page-link" href="javascript:void(0)">Siguiente</a></li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12 mb-4">
+            <div class="dashboard-card">
+              <h3 class="mb-3">Generación de Reportes</h3>
+              <form class="custom-form row">
+                <div class="col-md-3 mb-3">
+                  <label for="report-type" class="form-label">Tipo de Reporte</label>
+                  <select class="form-select" id="report-type">
+                    <option value="">Seleccionar...</option>
+                    <option value="attendance">Asistencia</option>
+                    <option value="demography">Demográfico</option>
+                    <option value="cases">Tipos de Caso</option>
+                    <option value="performance">Rendimiento</option>
+                  </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="report-start-date" class="form-label">Fecha Inicio</label>
+                  <input type="date" class="form-control" id="report-start-date">
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="report-end-date" class="form-label">Fecha Fin</label>
+                  <input type="date" class="form-control" id="report-end-date">
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="report-format" class="form-label">Formato</label>
+                  <select class="form-select" id="report-format">
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel</option>
+                    <option value="csv">CSV</option>
+                  </select>
+                </div>
+                <div class="col-md-12 mt-3 text-end">
+                  <button type="submit" class="btn btn-primary-custom"><i class='bx bx-download me-1'></i> Generar Reporte</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div class="loading-container" id="loader" style="display: none;">
+    <div class="loading-spinner"></div>
+  </div>
+</div>
+
+<!-- JavaScript Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="app.js"></script>
+</body>
+</html>

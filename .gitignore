@@ -1,0 +1,21 @@
+# Include your project-specific ignores in this file
+# Read about how to use .gitignore: https://help.github.com/articles/ignoring-files
+# Useful .gitignore templates: https://github.com/github/gitignore
+# Node.js (ejemplo para proyectos en JS/TS)
+node_modules/
+dist/
+.env
+
+# IDEs
+.idea/
+*.iml
+
+# Logs y archivos temporales
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Bases de datos de desarrollo (si usas SQLite, por ejemplo)
+*.sqlite
+*.db
